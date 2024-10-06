@@ -1,0 +1,14 @@
+Flask
+pandas
+selenium
+webdriver-manager
+beautifulsoup4
+Flask-Cors
+beautifulsoup4
+python-dotenv
+requests
+flask-pymongo 
+flask-cors 
+pyjwt 
+werkzeug
+
