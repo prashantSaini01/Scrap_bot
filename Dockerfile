@@ -4,8 +4,9 @@ ARG PORT=5000
 # Use Cypress browsers as the base image
 FROM cypress/browsers:latest
 
-# Install Python 3 and pip
-RUN apt-get update && apt-get install -y python3 python3-pip
+# Install Python 3 and pip with additional fixes
+RUN apt-get update && apt-get install -y python3 python3-pip --fix-missing \
+    && apt-get clean
 
 # Set the user base directory for pip installations
 RUN echo $(python3 -m site --user-base)
@@ -16,8 +17,9 @@ COPY requirements.txt .
 # Set environment variables to ensure Python binaries are in PATH
 ENV PATH=/home/root/.local/bin:$PATH
 
-# Install Python dependencies
-RUN apt-get update && apt-get install -y python3-pip && pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies separately for better error visibility
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the entire application code into the container
 COPY . .
@@ -27,3 +29,5 @@ EXPOSE $PORT
 
 # Command to run the application using uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "$PORT"]
+
+ 
