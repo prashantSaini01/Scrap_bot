@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import time
+import os
 import logging
 from webdriver_manager.chrome import ChromeDriverManager
 
