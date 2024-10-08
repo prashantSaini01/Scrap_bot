@@ -35,9 +35,13 @@ services:
       wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
       apt install ./google-chrome-stable_current_amd64.deb -y
 
+      # Check where Google Chrome is installed
+      which google-chrome
+
       # Install Python dependencies
       pip install -r requirements.txt
     startCommand: python app.py
     envVars:
       - key: CHROME_BINARY_PATH
         value: "/usr/bin/google-chrome"
+
