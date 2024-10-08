@@ -152,9 +152,9 @@ def scrape_twitter(data):
     # Initialize WebDriver
     # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     #chrome_driver_path = os.path.join(os.getcwd(), 'chrome_driver', 'chromedriver')
-    chrome_driver_path="\chrome_driver\chromedriver.exe"
-    service = Service(chrome_driver_path)
-    driver = webdriver.Chrome(service=service,options=chrome_options)
+    #chrome_driver_path="\chrome_driver\chromedriver.exe"
+    #service = Service(chrome_driver_path)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager(version="129.0.6668.89").install()),options=chrome_options)
  
 
 
