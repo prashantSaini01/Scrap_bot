@@ -150,8 +150,11 @@ def scrape_twitter(data):
     chrome_options.add_argument("--window-size=1920,1080")
 
     # Initialize WebDriver with the correct ChromeDriver path
-    service = Service('/usr/local/bin/chromedriver')  # This is where ChromeDriver is installed
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+    # service = Service('/usr/local/bin/chromedriver')  # This is where ChromeDriver is installed
+    
+    # driver = webdriver.Chrome(service=service, options=chrome_options)
+    service = Service(ChromeDriverManager(driver_version="129.0.6668.89").install())
+    driver = webdriver.Chrome(service=service,options=chrome_options)
     
     try:
         # Log in and search for posts
