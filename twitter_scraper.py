@@ -140,6 +140,7 @@ def scrape_twitter(data):
 
     # Configure headless Chrome options
     chrome_options = Options()
+    chrome_options.binary_location = "/usr/bin/google-chrome"  # Use the path to Chrome installed in Render
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
@@ -148,8 +149,9 @@ def scrape_twitter(data):
     chrome_options.add_argument("--disable-software-rasterizer")
     chrome_options.add_argument("--window-size=1920,1080")
 
-    # Initialize WebDriver
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    # Initialize WebDriver with the correct ChromeDriver path
+    service = Service('/usr/local/bin/chromedriver')  # This is where ChromeDriver is installed
+    driver = webdriver.Chrome(service=service, options=chrome_options)
     
     try:
         # Log in and search for posts
