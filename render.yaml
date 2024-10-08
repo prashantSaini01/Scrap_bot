@@ -27,6 +27,7 @@ services:
     name: Scraping_Backend
     env: python
     buildCommand: |
+      echo "Reading render.yaml"
       # Install Google Chrome
       apt-get update
       apt-get install -y wget unzip
