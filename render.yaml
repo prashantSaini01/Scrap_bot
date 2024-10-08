@@ -27,14 +27,13 @@ services:
     name: Scraping_Backend
     env: python
     buildCommand: |
-      echo "Reading render.yaml"
-      # Install Google Chrome
-      apt-get update
-      apt-get install -y wget unzip
+      # Use sudo to install Chrome and ChromeDriver
+      sudo apt-get update
+      sudo apt-get install -y wget unzip
 
       # Install Google Chrome
       wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-      apt install ./google-chrome-stable_current_amd64.deb -y
+      sudo apt install ./google-chrome-stable_current_amd64.deb -y
 
       # Check where Google Chrome is installed
       which google-chrome
