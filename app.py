@@ -4,6 +4,7 @@ from config import init_mongo, init_jwt_secret, register_user, login_user, token
 from twitter_scraper import scrape_twitter
 from instagram_scraper import scrape_instagram
 from linkedin_scraper import scrape_linkedin
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -57,4 +58,8 @@ def scrape_linkedin_route(current_user):
     return jsonify(result)
 
 if __name__ == "__main__":
-    app.run(port=5004, host='0.0.0.0',debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Default to port 5000 if no environment variable is set
+    app.run(port=port, host='0.0.0.0', debug=True)
+
+# if __name__ == "__main__":
+#     app.run(port=5004, host='0.0.0.0',debug=True)
