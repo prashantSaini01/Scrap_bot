@@ -57,9 +57,10 @@ def scrape_linkedin_route(current_user):
     result = scrape_linkedin(data)
     return jsonify(result)
 
-if __name__ == "__main__":
-    # port = int(os.environ.get("PORT", 5000))  # Default to port 5000 if no environment variable is set
-    app.run(debug=True)
-
 # if __name__ == "__main__":
-#     app.run(port=5004, host='0.0.0.0',debug=True)
+#     # port = int(os.environ.get("PORT", 5000))  # Default to port 5000 if no environment variable is set
+#     app.run(debug=True)
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(port=port, host='0.0.0.0',debug=True)
