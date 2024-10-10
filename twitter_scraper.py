@@ -3,53 +3,66 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import time
  
+# Function to handle dynamic login flow
 def login_to_x(driver, username, password, mobile_number):
     driver.get('https://www.x.com/login')
-    time.sleep(10)
+    time.sleep(10)  # Allow time for the page to load
  
+    # Fill in the username
     username_input = driver.find_element(By.CSS_SELECTOR, 'input[name="text"]')
     username_input.send_keys(username)
-    time.sleep(4)
  
+    # Click "Next" after entering username
     next_button = driver.find_element(By.XPATH, '//button[contains(@class, "css-175oi2r") and .//span[text()="Next"]]')
     next_button.click()
-    time.sleep(4)
  
-    try:
-        mobile_input = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, 'input[data-testid="ocfEnterTextTextInput"]'))
-        )
-        mobile_input.send_keys(mobile_number)
+    time.sleep(4)  # Pause to allow for the transition
  
-        verify_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-testid="ocfEnterTextNextButton"]'))
-        )
-        verify_button.click()
+    # Loop to handle dynamic login flow (password, mobile number)
+    while True:
+        try:
+            # Check if the password field is present
+            password_input = WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'input[name="password"]'))
+            )
+            password_input.send_keys(password)
+            break  # Break loop if password input is found and filled
+        except:
+            pass
  
-        password_input = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, 'input[name="password"]'))
-        )
-    except:
-        password_input = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, 'input[name="password"]'))
-        )
+        try:
+            # Check if mobile number field is present
+            mobile_input = WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'input[data-testid="ocfEnterTextTextInput"]'))
+            )
+            mobile_input.send_keys(mobile_number)
  
-    password_input.send_keys(password)
+            # Click verify/next after mobile number
+            verify_button = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-testid="ocfEnterTextNextButton"]'))
+            )
+            verify_button.click()
  
+            time.sleep(4)  # Wait for the transition to password field
+        except:
+            pass
+ 
+    # Final step: Click the login button after filling the password
     login_button = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-testid="LoginForm_Login_Button"]'))
     )
     login_button.click()
-    time.sleep(10)
+    time.sleep(10)  # Allow time for the login process to complete
  
-def search_hashtag_x(driver, query,desired_posts):
-    search_url = f'https://x.com/search?q=%23{query}'
+# Function to scrape hashtag-related posts
+def search_hashtag_x(driver, query, desired_posts):
+    search_url = f'https://x.com/search?q=%23{query}'  # URL to search by hashtag
     driver.get(search_url)
     time.sleep(5)
  
@@ -68,6 +81,7 @@ def search_hashtag_x(driver, query,desired_posts):
  
     return all_posts_data[:desired_posts]
  
+# Helper function to extract post data
 def extract_post_data(driver, seen_posts):
     posts_data = []
     try:
@@ -98,43 +112,33 @@ def extract_post_data(driver, seen_posts):
  
     return posts_data
  
- 
+# Main scraping function to be called
 def scrape_twitter(data):
     username = data.get('username')
     password = data.get('password')
     mobile_number = data.get('mobile_number')
     hashtag = data.get('hashtag')
-    desired_posts = data.get('desired_posts', 1)
+    desired_posts = data.get('desired_posts', 50)  # Default is 50 posts if not provided
  
     if username is None or password is None or mobile_number is None or hashtag is None:
         return jsonify({'error': 'Missing required fields'}), 400
  
-   # Configure headless Chrome options
+    # Set up Chrome WebDriver with options (headless mode)
     chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--disable-software-rasterizer")
-    chrome_options.add_argument("--window-size=1920,1080")
-
-
-    # Initialize WebDriver
-    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    #chrome_driver_path = os.path.join(os.getcwd(), 'chrome_driver', 'chromedriver')
-    # chrome_driver_path="./chrome_driver/chromedriver.exe"
-    chrome_driver_path = '/opt/render/project/.render/chromedriver/chromedriver'
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--window-size=1920x1080')
  
-    service = Service(chrome_driver_path)
-    #service = Service(ChromeDriverManager(driver_version="129.0.6668.89").install())
-    driver = webdriver.Chrome(service=service,options=chrome_options)
-
-   # Example usage of the WebDriver for web scraping
-    driver.get("https://www.example.com")
-    print(driver.title)  # Print the page title for verification
+    # Initialize the WebDriver with the Chrome options
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    
+ 
     try:
+        # Log in to X.com (Twitter) and scrape the posts
         login_to_x(driver, username, password, mobile_number)
         posts = search_hashtag_x(driver, hashtag, desired_posts)
-        return jsonify(posts)
+        return jsonify(posts)  # Return the scraped post data as JSON
     finally:
         driver.quit()
