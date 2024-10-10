@@ -23,7 +23,7 @@ from selenium.webdriver.chrome.options import Options
 import re
 import json
 
-
+from selenium import webdriver
 from urllib.parse import urlparse
 
 app = Flask(__name__)
@@ -160,21 +160,7 @@ class LinkedInProfileSummary(BaseModel):
     ice_breakers: list[str] = Field(description="Ice breakers for conversation")
     topics_of_interest: list[str] = Field(description="Topics of interest for the person")
 
-# Define the scraping function
-# @tool
-# def scrape_linkedin_profile(linkedin_profile_url: str, mock: bool = False):
-#     """Scrape LinkedIn profile data or use mock data."""
-#     mock_url = "https://gist.githubusercontent.com/vansh-voyage/b95db9b975c06f1b5694897f8c986126/raw/d9a7aa85fee5e9a4db49daa5fe0b54d77bda6552/vansh.json"
-#     if mock:
-#         response = requests.get(mock_url, timeout=10)
-#         data = response.json()
-#     else:
-#         api_endpoint = "https://nubela.co/proxycurl/api/v2/linkedin"
-#         header_dic = {"Authorization": f'Bearer {os.environ.get("PROXYCURL_API_KEY")}'}
-#         response = requests.get(api_endpoint, params={"url": linkedin_profile_url}, headers=header_dic, timeout=10)
-#         data = response.json()
 
-#     return data
 from typing import Dict, Any
 
 @tool
@@ -240,51 +226,7 @@ agent = create_react_agent(llm, tools, prompt=prompt)
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True,handle_parsing_errors=True)
 
 
-# @app.route('/scrape_linkedin', methods=['POST'])
-# def scrape_linkedin():
-#     data = request.json
-#     linkedin_profile_url = data.get('linkedin_profile_url', '').strip()        
-#     mock = data.get('mock', False)
-#     if (!linkedin_profile_url):
-#         mock=""
-#     scrape_input = {
-#     "linkedin_profile_url": linkedin_profile_url,  # leave empty for mock data
-#     "mock": False
-# }
 
-#     # Validate the LinkedIn profile URL
-#     if not linkedin_profile_url or not urlparse(linkedin_profile_url).scheme:
-#         return jsonify({'error': 'Invalid LinkedIn profile URL provided'})
-
-#     try:
-#         # Scrape LinkedIn profile data
-#         scraped_data = scrape_linkedin_profile(scrape_input)
-
-#         # Prepare input for the agent
-#         agent_input = {
-#             "input": "Provide a summary of the LinkedIn profile",
-#             "profile_data": scraped_data,
-#             "mock":mock
-#         }
-
-#         # Invoke the agent with the scraped data
-#         result = agent_executor.invoke(agent_input)
-
-#         # Check for valid result
-#         if 'output' in result:
-#             pattern = re.compile(r'{(.*)}', re.DOTALL)
-#             match = pattern.search(result['output'])
-#             if match:
-#                 result = json.loads("{" + match.group(1) + "}")
-#             else:
-#                 return jsonify({'error': 'Failed to parse result'})
-#         else:
-#             return jsonify({'error': 'No output received'})
-
-#         return jsonify(result)
-
-#     except Exception as e:
-#         return jsonify({'error': str(e)})
 @app.route('/scrape_linkedin', methods=['POST'])
 def scrape_linkedin():
     data = request.json
@@ -410,7 +352,7 @@ def scrape_posts(driver):
 
 
 # Function to save data to CSV
-def save_to_csv(data, filename='scraped_data.csv'):
+def save_to_csv(data, filename='ScrapedData.csv'):
     with open(filename, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=['Username', 'Post Timing', 'Caption', 'Image URL', 'Post URL'])
         writer.writeheader()
@@ -421,7 +363,12 @@ def save_to_csv(data, filename='scraped_data.csv'):
 def scrape_instagram():
     # Initialize WebDriver inside the function
     chrome_options = Options()
+    chrome_options.binary_location = "/opt/render/project/.render/chrome/chrome"  # Update with the actual Chrome binary location
     chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+
+    browser = webdriver.Chrome(options=chrome_options)
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=chrome_options)
 
     data = request.json  # Use request.json for JSON payload
@@ -441,6 +388,10 @@ def scrape_instagram():
     finally:
         driver.quit()  # Ensure to quit the driver properly
 
+import os
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.getenv('PORT', 5000))  # Fallback to 5000 if PORT not set
+    app.run(host='0.0.0.0', port=port)
+
  
