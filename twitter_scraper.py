@@ -128,6 +128,10 @@ def scrape_twitter(data):
     service = Service(chrome_driver_path)
     #service = Service(ChromeDriverManager(driver_version="129.0.6668.89").install())
     driver = webdriver.Chrome(service=service,options=chrome_options)
+
+   # Example usage of the WebDriver for web scraping
+    driver.get("https://www.example.com")
+    print(driver.title)  # Print the page title for verification
     try:
         login_to_x(driver, username, password, mobile_number)
         posts = search_hashtag_x(driver, hashtag, desired_posts)
