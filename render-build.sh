@@ -1,23 +1,40 @@
 #!/usr/bin/env bash
-# exit on error
+# Exit on error
 set -o errexit
 
 STORAGE_DIR=/opt/render/project/.render
 
+# Check if Chrome directory exists
 if [[ ! -d $STORAGE_DIR/chrome ]]; then
   echo "...Downloading Chrome"
   mkdir -p $STORAGE_DIR/chrome
   cd $STORAGE_DIR/chrome
-  # Use Chrome 108.0.5359.125 from the archive
+  # Download specific Chrome version (108.0.5359.125)
   wget -P ./ https://commondatastorage.googleapis.com/chromium-browser-official/chromium-108.0.5359.125.tar.xz
   tar -xf ./chromium-108.0.5359.125.tar.xz --strip-components=1
   rm ./chromium-108.0.5359.125.tar.xz
-  cd $HOME/project/src # Make sure we return to where we were
 else
   echo "...Using Chrome from cache"
 fi
 
-# Add Chrome's location to the PATH
-export PATH="${PATH}:/opt/render/project/.render/chrome"
+# Install Chromedriver
+if [[ ! -d $STORAGE_DIR/chromedriver ]]; then
+  echo "...Downloading Chromedriver"
+  mkdir -p $STORAGE_DIR/chromedriver
+  cd $STORAGE_DIR/chromedriver
+  # Download the matching Chromedriver version
+  wget -P ./ https://chromedriver.storage.googleapis.com/108.0.5359.71/chromedriver_linux64.zip
+  unzip chromedriver_linux64.zip
+  rm chromedriver_linux64.zip
+else
+  echo "...Using Chromedriver from cache"
+fi
 
-# Continue with your build commands...
+# Add Chrome and Chromedriver's location to the PATH
+export PATH="${PATH}:${STORAGE_DIR}/chrome:${STORAGE_DIR}/chromedriver"
+
+# Return to the project directory to continue the build process
+cd $HOME/project/src
+
+# Logging to check that Chrome and Chromedriver are installed correctly
+echo "Chrome and Chromedriver setup complete, proceeding with Flask app deployment."
