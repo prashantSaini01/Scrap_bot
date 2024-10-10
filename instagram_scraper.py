@@ -96,14 +96,14 @@ def scrape_instagram(data):
     hashtag = data.get('hashtag')
 
     chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--disable-software-rasterizer")
-    chrome_options.add_argument("--window-size=1920,1080")
-
-    driver = webdriver.Chrome(options=chrome_options)
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--window-size=1920x1080')
+ 
+    # Initialize the WebDriver with the Chrome options
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     try:
         login_to_instagram(driver, email, password)
         search_hashtag(driver, hashtag)
