@@ -90,15 +90,14 @@ def scrape_linkedin(data):
     password = data.get('password')
     query = data.get('query')
     chrome_options = Options()
-    chrome_options.add_argument("--headless")
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run Chrome in headless mode
-    chrome_options.add_argument("--no-sandbox")  # Disable the sandbox (recommended in Docker)
-    chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
-    chrome_options.add_argument("--disable-gpu")  # Disable GPU usage for headless environment
-    chrome_options.add_argument("--disable-extensions")  # Disable extensions
-    chrome_options.add_argument("--disable-software-rasterizer")  # Disable software rendering for performance
-    chrome_options.add_argument("--window-size=1920,1080")  # Set window size
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--disable-software-rasterizer")
+    chrome_options.add_argument("--window-size=1920,1080")
+
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=chrome_options)
     try:
