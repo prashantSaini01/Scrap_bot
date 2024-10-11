@@ -1,44 +1,48 @@
 from flask import jsonify
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-import time
 from urllib.parse import urlparse
 import csv
 
 
 def login_to_instagram(driver, email, password):
     driver.get('https://www.instagram.com/accounts/login/')
-    time.sleep(5)
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, 'username')))
+    
     email_input = driver.find_element(By.NAME, 'username')
     password_input = driver.find_element(By.NAME, 'password')
     email_input.send_keys(email)
     password_input.send_keys(password)
+
     login_button = driver.find_element(By.XPATH, '//button[@type="submit"]')
     login_button.click()
-    time.sleep(5)
+    
+    # Wait until the home page loads (detectable by the presence of the search bar or some other unique element)
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[placeholder="Search"]')))
+
 
 # Function to search for a hashtag
 def search_hashtag(driver, hashtag):
     search_url = f'https://www.instagram.com/explore/tags/{hashtag}/'
     driver.get(search_url)
-    time.sleep(5)
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'article')))
+
 
 def scrape_posts(driver):
     scraped_data = []
     post_count = 0
 
     while post_count < 20:
-        # Find the posts from the specific div class
         posts = driver.find_elements(By.CSS_SELECTOR, 'div.x9f619.xjbqb8w a._a6hd') 
         post_urls = [post.get_attribute('href') for post in posts]
         caption = []
 
-        for post in posts:           
+        for post in posts:
             imgs = driver.find_elements(By.CSS_SELECTOR, 'div._aagv img')
             for img in imgs:
                 alt_text = img.get_attribute('alt')
@@ -48,8 +52,10 @@ def scrape_posts(driver):
             if post_count >= 20:
                 break
             driver.get(post_url)
-            time.sleep(2)  # Wait for the post to load
-
+            
+            # Wait for the post to load fully
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'img[style="object-fit: cover;"]')))
+            
             try:
                 # Extract image URL
                 image_url = driver.find_element(By.CSS_SELECTOR, 'img[style="object-fit: cover;"]').get_attribute('src')
@@ -76,18 +82,9 @@ def scrape_posts(driver):
 
         # Scroll down to load more posts
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(5)
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div.x9f619.xjbqb8w a._a6hd')))
 
     return scraped_data
-
-
-# # Function to save data to CSV
-# def save_to_csv(data, filename='scraped_data.csv'):
-#     with open(filename, mode='w', newline='', encoding='utf-8') as file:
-#         writer = csv.DictWriter(file, fieldnames=['Username', 'Post Timing', 'Caption', 'Image URL', 'Post URL'])
-#         writer.writeheader()
-#         for row in data:
-#             writer.writerow(row)
 
 
 def scrape_instagram(data):
