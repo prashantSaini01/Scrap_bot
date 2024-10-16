@@ -1,3 +1,4 @@
+import os
 from googleapiclient.discovery import build
 from flask import Flask, request, jsonify
 
@@ -5,9 +6,10 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 # YouTube API credentials
-DEVELOPER_KEY = 'AIzaSyCekWrNmSact7Vy30gHOflGPbhZETMITlI'
-YOUTUBE_API_SERVICE_NAME = 'youtube'
-YOUTUBE_API_VERSION = 'v3'
+DEVELOPER_KEY = os.getenv('DEVELOPER_KEY')
+YOUTUBE_API_SERVICE_NAME = os.getenv('YOUTUBE_API_SERVICE_NAME')
+YOUTUBE_API_VERSION = os.getenv('YOUTUBE_API_VERSION')
+
 
 # Function to call YouTube API and search for videos by query
 def youtube_search_by_query(query, max_results):
