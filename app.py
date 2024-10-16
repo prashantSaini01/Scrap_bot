@@ -4,7 +4,7 @@ from config import init_mongo, init_jwt_secret, register_user, login_user, token
 from twitter_scraper import scrape_twitter
 from instagram_scraper import scrape_instagram
 from linkedin_scraper import scrape_linkedin
-from youtube import youtube_search_by_hashtag
+from youtube import scrape_youtube
 import os
 
 app = Flask(__name__)
@@ -58,18 +58,12 @@ def scrape_linkedin_route(current_user):
     result = scrape_linkedin(data)
     return jsonify(result)
 
-# YouTube Scraping Route
 @app.route('/scrape_youtube', methods=['POST'])
 @secure_route
 def scrape_youtube_route(current_user):
     data = request.json
-    hashtag = data.get('hashtag')
-    max_results = data.get('max_results', 10)  # Default to 10 results if not provided
-    if not hashtag:
-        return jsonify({"error": "Hashtag is required"}), 400
-    
-    videos = youtube_search_by_hashtag(hashtag, max_results)
-    return jsonify(videos)
+    result = scrape_youtube(data)
+    return jsonify(result)
 
 # if __name__ == "__main__":
 #     # port = int(os.environ.get("PORT", 5000))  # Default to port 5000 if no environment variable is set
