@@ -8,19 +8,36 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 import time
 from urllib.parse import urlparse
-import csv
-
 
 def login_to_instagram(driver, email, password):
     driver.get('https://www.instagram.com/accounts/login/')
-    time.sleep(5)
-    email_input = driver.find_element(By.NAME, 'username')
-    password_input = driver.find_element(By.NAME, 'password')
-    email_input.send_keys(email)
-    password_input.send_keys(password)
-    login_button = driver.find_element(By.XPATH, '//button[@type="submit"]')
-    login_button.click()
-    time.sleep(5)
+    
+    try:
+        email_input = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.NAME, 'username'))
+        )
+        password_input = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.NAME, 'password'))
+        )
+        
+        email_input.send_keys(email)
+        password_input.send_keys(password)
+        
+        login_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, '//button[@type="submit"]'))
+        )
+        login_button.click()
+
+        # Wait for login completion
+        WebDriverWait(driver, 10).until(
+            EC.url_changes('https://www.instagram.com/accounts/login/')
+        )
+        time.sleep(5)  # Give some time for the dashboard to load
+
+    except Exception as e:
+        driver.save_screenshot('login_error.png')  # Save screenshot for debugging
+        print(f"Error during login: {e}")
+        return None
 
 # Function to search for a hashtag
 def search_hashtag(driver, hashtag):
@@ -28,11 +45,11 @@ def search_hashtag(driver, hashtag):
     driver.get(search_url)
     time.sleep(5)
 
-def scrape_posts(driver):
+def scrape_posts(driver, post_count_limit):
     scraped_data = []
     post_count = 0
 
-    while post_count < 20:
+    while post_count < post_count_limit:
         # Find the posts from the specific div class
         posts = driver.find_elements(By.CSS_SELECTOR, 'div.x9f619.xjbqb8w a._a6hd') 
         post_urls = [post.get_attribute('href') for post in posts]
@@ -45,7 +62,7 @@ def scrape_posts(driver):
                 caption.append({"Caption": alt_text})
 
         for i, post_url in enumerate(post_urls):
-            if post_count >= 20:
+            if post_count >= post_count_limit:
                 break
             driver.get(post_url)
             time.sleep(2)  # Wait for the post to load
@@ -65,7 +82,7 @@ def scrape_posts(driver):
 
             # Combine caption with post data
             post_data = {
-                'Username': username_href,      # Store the actual username
+                'Username': username,      # Store the actual username
                 'Image URL': image_url,    # Store image URL
                 'Post URL': post_url,      # Store post URL
                 'Caption': caption[i]["Caption"] if i < len(caption) else "No caption"  # Merge corresponding caption
@@ -80,20 +97,13 @@ def scrape_posts(driver):
 
     return scraped_data
 
-
-# # Function to save data to CSV
-# def save_to_csv(data, filename='scraped_data.csv'):
-#     with open(filename, mode='w', newline='', encoding='utf-8') as file:
-#         writer = csv.DictWriter(file, fieldnames=['Username', 'Post Timing', 'Caption', 'Image URL', 'Post URL'])
-#         writer.writeheader()
-#         for row in data:
-#             writer.writerow(row)
-
-
 def scrape_instagram(data):
     email = data.get('email')
     password = data.get('password')
     hashtag = data.get('hashtag')
+    post_count_limit = int(data.get('post_count', 20))  # Default to 20 if not provided
+
+    chrome_options = Options()
 
     chrome_options = Options()
     chrome_options.add_argument('--headless')
@@ -102,13 +112,12 @@ def scrape_instagram(data):
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--window-size=1920x1080')
  
-    # Initialize the WebDriver with the Chrome options
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     try:
         login_to_instagram(driver, email, password)
         search_hashtag(driver, hashtag)
-        scraped_data = scrape_posts(driver)
-        return jsonify(scraped_data[:-2])
+        scraped_data = scrape_posts(driver, post_count_limit)  # Pass the desired post count
+        return jsonify(scraped_data)
     except Exception as e:
         return jsonify({'error': str(e)})
     finally:
