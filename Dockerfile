@@ -7,6 +7,23 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     unzip \
     curl \
+    ca-certificates \
+    fonts-liberation \
+    libappindicator3-1 \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdbus-glib-1-2 \
+    libgdk-pixbuf2.0-0 \
+    libnspr4 \
+    libnss3 \
+    libxcomposite1 \
+    libxrandr2 \
+    libxss1 \
+    xdg-utils \
+    libgbm-dev \
+
     && rm -rf /var/lib/apt/lists/*
 
 # Install Chrome (Stable version)
@@ -32,12 +49,11 @@ COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install python-dotenv
+
 
 # Copy the entire Flask app and .env file into the container
 COPY . .
-
-# Make sure your .env file is in the root of the app directory
-#RUN pip install python-dotenv
 
 # Run the Flask app
 CMD ["python", "app.py"]

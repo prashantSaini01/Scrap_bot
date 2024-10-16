@@ -11,6 +11,7 @@ import time
 
 
 
+
 # Function to handle dynamic login flow
 def login_to_x(driver, username, password, mobile_number):
     driver.get('https://www.x.com/login')
@@ -25,6 +26,7 @@ def login_to_x(driver, username, password, mobile_number):
     next_button.click()
     time.sleep(4)
 
+
     while True:
         try:
             # Check if the password field is present
@@ -32,9 +34,11 @@ def login_to_x(driver, username, password, mobile_number):
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'input[name="password"]'))
             )
             password_input.send_keys(password)
+
             break
         except:
             pass
+
 
         try:
             # Check if mobile number field is present
@@ -48,19 +52,26 @@ def login_to_x(driver, username, password, mobile_number):
                 EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-testid="ocfEnterTextNextButton"]'))
             )
             verify_button.click()
+
             time.sleep(4)
         except:
             pass
+
+
+ 
+    # Final step: Click the login button after filling the password
 
     login_button = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-testid="LoginForm_Login_Button"]'))
     )
     login_button.click()
+
     time.sleep(10)
 
 # Function to scrape hashtag-related posts
 def search_hashtag_x(driver, query, desired_posts):
     search_url = f'https://x.com/search?q=%23{query}'
+
     driver.get(search_url)
     time.sleep(5)
 
@@ -78,7 +89,7 @@ def search_hashtag_x(driver, query, desired_posts):
         time.sleep(5)
 
     return all_posts_data[:desired_posts]
-
+  
 # Helper function to extract post data
 def extract_post_data(driver, seen_posts):
     posts_data = []
@@ -110,8 +121,7 @@ def extract_post_data(driver, seen_posts):
 
     return posts_data
 
-# Flask route for scraping
-#@app.route('/scrape', methods=['POST'])
+
 def scrape_twitter(data):
     #data = request.json
     username = data.get('username')
@@ -123,6 +133,7 @@ def scrape_twitter(data):
     if not all([username, password, mobile_number, hashtag]):
         return jsonify({'error': 'Missing required fields'}), 400
 
+
     # Set up Chrome WebDriver with options (headless mode)
     chrome_options = Options()
     chrome_options.add_argument('--headless')
@@ -130,6 +141,7 @@ def scrape_twitter(data):
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--window-size=1920x1080')
+
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
@@ -140,6 +152,7 @@ def scrape_twitter(data):
         return jsonify(posts)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
     finally:
         driver.quit()
 

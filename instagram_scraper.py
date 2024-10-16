@@ -1,16 +1,16 @@
 from flask import jsonify
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-import time
 from urllib.parse import urlparse
 
 def login_to_instagram(driver, email, password):
     driver.get('https://www.instagram.com/accounts/login/')
+
     
     try:
         email_input = WebDriverWait(driver, 10).until(
@@ -39,11 +39,13 @@ def login_to_instagram(driver, email, password):
         print(f"Error during login: {e}")
         return None
 
+
 # Function to search for a hashtag
 def search_hashtag(driver, hashtag):
     search_url = f'https://www.instagram.com/explore/tags/{hashtag}/'
     driver.get(search_url)
-    time.sleep(5)
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'article')))
+
 
 def scrape_posts(driver, post_count_limit):
     scraped_data = []
@@ -51,11 +53,12 @@ def scrape_posts(driver, post_count_limit):
 
     while post_count < post_count_limit:
         # Find the posts from the specific div class
+
         posts = driver.find_elements(By.CSS_SELECTOR, 'div.x9f619.xjbqb8w a._a6hd') 
         post_urls = [post.get_attribute('href') for post in posts]
         caption = []
 
-        for post in posts:           
+        for post in posts:
             imgs = driver.find_elements(By.CSS_SELECTOR, 'div._aagv img')
             for img in imgs:
                 alt_text = img.get_attribute('alt')
@@ -65,8 +68,10 @@ def scrape_posts(driver, post_count_limit):
             if post_count >= post_count_limit:
                 break
             driver.get(post_url)
-            time.sleep(2)  # Wait for the post to load
-
+            
+            # Wait for the post to load fully
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'img[style="object-fit: cover;"]')))
+            
             try:
                 # Extract image URL
                 image_url = driver.find_element(By.CSS_SELECTOR, 'img[style="object-fit: cover;"]').get_attribute('src')
@@ -93,9 +98,10 @@ def scrape_posts(driver, post_count_limit):
 
         # Scroll down to load more posts
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(5)
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div.x9f619.xjbqb8w a._a6hd')))
 
     return scraped_data
+
 
 def scrape_instagram(data):
     email = data.get('email')
@@ -104,14 +110,13 @@ def scrape_instagram(data):
     post_count_limit = int(data.get('post_count', 20))  # Default to 20 if not provided
 
     chrome_options = Options()
-
-    chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--window-size=1920x1080')
  
+
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     try:
         login_to_instagram(driver, email, password)
