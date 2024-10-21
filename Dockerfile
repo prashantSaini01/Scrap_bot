@@ -50,6 +50,7 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install python-dotenv
+RUN playwright install --with-deps
 
 
 # Copy the entire Flask app and .env file into the container
