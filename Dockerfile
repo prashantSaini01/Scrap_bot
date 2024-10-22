@@ -62,7 +62,7 @@
 
 
 # Use Playwright's Python base image
-FROM mcr.microsoft.com/playwright/python:v1.34.0-focal
+FROM mcr.microsoft.com/playwright/python:v1.48.0-focal
 
 # Set the working directory
 WORKDIR /app
