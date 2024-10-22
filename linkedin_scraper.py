@@ -208,7 +208,7 @@ def scrape_linkedin(data):
     desired_posts = int(data.get('desired_posts', 10))  # Default to 10 posts if not provided
     
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)#args=["--no-sandbox", "--disable-setuid-sandbox"])  # Set to True for headless mode
+        browser = p.chromium.launch(headless=True)#args=["--no-sandbox", "--disable-setuid-sandbox"])  # Set to True for headless mode
         page = browser.new_page()
         page.set_viewport_size({"width": 1280, "height": 720})
 
