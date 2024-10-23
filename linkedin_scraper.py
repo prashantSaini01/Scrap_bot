@@ -115,3 +115,264 @@ def scrape_linkedin(data):
         return {'error': str(e)}
     finally:
         driver.quit()
+
+
+# import csv
+# import re
+# import time
+# from playwright.sync_api import sync_playwright
+# from flask import jsonify
+
+# # Function to login to LinkedIn
+# def login_to_linkedin(page, email, password):
+#     page.goto('https://www.linkedin.com/login')
+#     page.fill('#username', email)
+#     page.fill('#password', password)
+#     page.click('button[type="submit"]')
+#     page.wait_for_timeout(10000)  # wait for login to complete
+
+# # Function to perform a search (keyword or hashtag based on input)
+# def perform_search(page, query, max_scroll=5):
+#     search_url = f'https://www.linkedin.com/search/results/content/?keywords={query}'
+#     page.goto(search_url)
+#     page.wait_for_timeout(5000)
+    
+#     # Scroll through the results page
+#     for _ in range(max_scroll):
+#         page.evaluate('window.scrollTo(0, document.body.scrollHeight);')
+#         time.sleep(5)
+
+# # Function to extract post content from the page using Playwright
+# def extract_post_content(page):
+#     posts_data = []
+#     try:
+#         posts = page.query_selector_all('div.update-components-text.relative')
+#         for post in posts:
+#             # Extract content
+#             content = post.inner_text().strip()
+#             # Extract and filter hashtags
+#             hashtags = extract_unique_hashtags(content)
+#             filtered_content = re.sub(r'#\w+', '', content).replace('hashtag', '').strip()
+#             # Extract author name
+#             author = post.query_selector('span.feed-shared-actor__name') or post.query_selector('.update-components-actor__name')
+#             author_name = author.inner_text().strip() if author else "Unknown Author"
+#             # Extract image URL
+#             image = post.query_selector('img')
+#             image_url = image.get_attribute('src') if image else "No Image Available"
+#             # Extract post URL
+#             post_url_element = post.query_selector('a.app-aware-link')
+#             post_url = post_url_element.get_attribute('href') if post_url_element else "No URL"
+#             # Append data
+#             posts_data.append({
+#                 'Content': filtered_content,
+#                 'Hashtags': ', '.join(hashtags),
+#                 'Image URL': image_url,
+#                 'Author': author_name,
+#                 'Post URL': post_url
+#             })
+#     except Exception as e:
+#         print(f"Error extracting post content: {e}")
+#     return posts_data
+
+# # Function to extract hashtags
+# def extract_unique_hashtags(content):
+#     hashtags = re.findall(r'#\w+', content)
+#     return list(set(hashtags))  # Remove duplicates
+
+# # Function to save data to CSV (optional)
+# def save_to_csv(data, filename='scraped_data.csv'):
+#     try:
+#         with open(filename, mode='w', newline='', encoding='utf-8') as file:
+#             writer = csv.DictWriter(file, fieldnames=['Content', 'Hashtags', 'Image URL', 'Author', 'Post URL'])
+#             writer.writeheader()
+#             writer.writerows(data)
+#         print(f"Data successfully saved to '{filename}'.")
+#     except Exception as e:
+#         print(f"Error saving data to CSV: {e}")
+
+# # Function to scroll and extract more posts if necessary
+# def scroll_and_extract_posts(page, posts_data, num_posts):
+#     while len(posts_data) < num_posts:
+#         page.mouse.wheel(0, 3000)  # Scroll down
+#         new_posts = extract_post_content(page)
+#         if not new_posts:
+#             break
+#         posts_data.extend(new_posts)
+#         if len(posts_data) >= num_posts:
+#             break
+
+# # Main scraping function using Playwright with desired_posts parameter
+# def scrape_linkedin(data):
+#     email = data.get('email')
+#     password = data.get('password')
+#     query = data.get('query')
+#     desired_posts = int(data.get('desired_posts', 10))  # Default to 10 posts if not provided
+    
+#     with sync_playwright() as p:
+#         browser = p.chromium.launch(headless=True)#args=["--no-sandbox", "--disable-setuid-sandbox"])  # Set to True for headless mode
+#         page = browser.new_page()
+#         page.set_viewport_size({"width": 1280, "height": 720})
+
+#         try:
+#             # Login and search
+#             login_to_linkedin(page, email, password)
+#             perform_search(page, query)
+            
+#             # Extract posts
+#             posts_data = extract_post_content(page)
+#             scroll_and_extract_posts(page, posts_data, desired_posts)
+            
+#             # Truncate to the desired number of posts
+#             posts_data = posts_data[:desired_posts]
+            
+#             # Save to CSV (optional)
+#             save_to_csv(posts_data)
+            
+#             return posts_data
+#         except Exception as e:
+#             return {'error': str(e)}
+#         finally:
+#             browser.close()
+
+# # import csv
+# # import re
+# # import time
+# # from playwright.sync_api import sync_playwright
+# # from flask import jsonify
+
+# # # Function to login to LinkedIn
+# # def login_to_linkedin(page, email, password):
+# #     print("Attempting to log in to LinkedIn...")
+# #     page.goto('https://www.linkedin.com/login')
+# #     page.fill('#username', email)
+# #     print("Email entered.")
+# #     page.fill('#password', password)
+# #     print("Password entered.")
+# #     page.click('button[type="submit"]')
+# #     page.wait_for_timeout(10000)  # wait for login to complete
+# #     print("Login completed.")
+
+# # # Function to perform a search (keyword or hashtag based on input)
+# # def perform_search(page, query, max_scroll=5):
+# #     print(f"Performing search for query: {query}")
+# #     search_url = f'https://www.linkedin.com/search/results/content/?keywords={query}'
+# #     page.goto(search_url)
+# #     page.wait_for_timeout(5000)
+    
+# #     # Scroll through the results page
+# #     for i in range(max_scroll):
+# #         print(f"Scrolling through results: Page {i+1}")
+# #         page.evaluate('window.scrollTo(0, document.body.scrollHeight);')
+# #         time.sleep(5)
+
+# # # Function to extract post content from the page using Playwright
+# # def extract_post_content(page):
+# #     print("Extracting post content...")
+# #     posts_data = []
+# #     try:
+# #         posts = page.query_selector_all('div.update-components-text.relative')
+# #         print(f"Number of posts found: {len(posts)}")
+# #         for i, post in enumerate(posts):
+# #             # Extract content
+# #             content = post.inner_text().strip()
+# #             print(f"Post {i+1} content: {content[:50]}...")  # Show first 50 characters of content
+            
+# #             # Extract and filter hashtags
+# #             hashtags = extract_unique_hashtags(content)
+# #             filtered_content = re.sub(r'#\w+', '', content).replace('hashtag', '').strip()
+            
+# #             # Extract author name
+# #             author = post.query_selector('span.feed-shared-actor__name') or post.query_selector('.update-components-actor__name')
+# #             author_name = author.inner_text().strip() if author else "Unknown Author"
+# #             print(f"Author: {author_name}")
+            
+# #             # Extract image URL
+# #             image = post.query_selector('img')
+# #             image_url = image.get_attribute('src') if image else "No Image Available"
+# #             print(f"Image URL: {image_url}")
+            
+# #             # Extract post URL
+# #             post_url_element = post.query_selector('a.app-aware-link')
+# #             post_url = post_url_element.get_attribute('href') if post_url_element else "No URL"
+# #             print(f"Post URL: {post_url}")
+            
+# #             # Append data
+# #             posts_data.append({
+# #                 'Content': filtered_content,
+# #                 'Hashtags': ', '.join(hashtags),
+# #                 'Image URL': image_url,
+# #                 'Author': author_name,
+# #                 'Post URL': post_url
+# #             })
+# #     except Exception as e:
+# #         print(f"Error extracting post content: {e}")
+# #     return posts_data
+
+# # # Function to extract hashtags
+# # def extract_unique_hashtags(content):
+# #     hashtags = re.findall(r'#\w+', content)
+# #     print(f"Hashtags found: {hashtags}")
+# #     return list(set(hashtags))  # Remove duplicates
+
+# # # Function to save data to CSV (optional)
+# # def save_to_csv(data, filename='scraped_data.csv'):
+# #     try:
+# #         print(f"Saving data to CSV: {filename}")
+# #         with open(filename, mode='w', newline='', encoding='utf-8') as file:
+# #             writer = csv.DictWriter(file, fieldnames=['Content', 'Hashtags', 'Image URL', 'Author', 'Post URL'])
+# #             writer.writeheader()
+# #             writer.writerows(data)
+# #         print(f"Data successfully saved to '{filename}'.")
+# #     except Exception as e:
+# #         print(f"Error saving data to CSV: {e}")
+
+# # # Function to scroll and extract more posts if necessary
+# # def scroll_and_extract_posts(page, posts_data, num_posts):
+# #     while len(posts_data) < num_posts:
+# #         print(f"Scrolling for more posts, currently have {len(posts_data)} posts.")
+# #         page.mouse.wheel(0, 3000)  # Scroll down
+# #         new_posts = extract_post_content(page)
+# #         if not new_posts:
+# #             print("No new posts found.")
+# #             break
+# #         posts_data.extend(new_posts)
+# #         if len(posts_data) >= num_posts:
+# #             break
+
+# # # Main scraping function using Playwright with desired_posts parameter
+# # def scrape_linkedin(data):
+# #     email = data.get('email')
+# #     password = data.get('password')
+# #     query = data.get('query')
+# #     desired_posts = int(data.get('desired_posts', 10))  # Default to 10 posts if not provided
+    
+# #     print(f"Starting LinkedIn scrape for {desired_posts} posts...")
+    
+# #     with sync_playwright() as p:
+# #         browser = p.chromium.launch(headless=True, args=["--no-sandbox", "--disable-setuid-sandbox"])  # Set to True for headless mode
+# #         page = browser.new_page()
+# #         page.set_viewport_size({"width": 1280, "height": 720})
+
+# #         try:
+# #             # Login and search
+# #             login_to_linkedin(page, email, password)
+# #             perform_search(page, query)
+            
+# #             # Extract posts
+# #             posts_data = extract_post_content(page)
+# #             scroll_and_extract_posts(page, posts_data, desired_posts)
+            
+# #             # Truncate to the desired number of posts
+# #             posts_data = posts_data[:desired_posts]
+            
+# #             # Save to CSV (optional)
+# #             save_to_csv(posts_data)
+            
+# #             print(f"Scraping completed. Total posts extracted: {len(posts_data)}")
+# #             return posts_data
+# #         except Exception as e:
+# #             print(f"Error occurred during scraping: {e}")
+# #             return {'error': str(e)}
+# #         finally:
+# #             browser.close()
+# #             print("Browser closed.")
