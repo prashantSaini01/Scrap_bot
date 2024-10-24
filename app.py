@@ -4,6 +4,7 @@ from config import init_mongo, init_jwt_secret, register_user, login_user, token
 from twitter_scraper import scrape_twitter
 from instagram_scraper import scrape_instagram
 from linkedin_scraper import scrape_linkedin
+from youtube import scrape_youtube
 import os
 
 app = Flask(__name__)
@@ -55,6 +56,13 @@ def scrape_instagram_route(current_user):
 def scrape_linkedin_route(current_user):
     data = request.json
     result = scrape_linkedin(data)
+    return jsonify(result)
+
+@app.route('/scrape_youtube', methods=['POST'])
+@secure_route
+def scrape_youtube_route(current_user):
+    data = request.json
+    result = scrape_youtube(data)
     return jsonify(result)
 
 # if __name__ == "__main__":

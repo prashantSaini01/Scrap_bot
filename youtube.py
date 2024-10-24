@@ -1,5 +1,4 @@
 import os
-import pandas as pd
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
 
@@ -11,6 +10,7 @@ DEVELOPER_KEY = os.getenv('DEVELOPER_KEY')
 YOUTUBE_API_SERVICE_NAME = os.getenv('YOUTUBE_API_SERVICE_NAME')
 YOUTUBE_API_VERSION = os.getenv('YOUTUBE_API_VERSION')
 
+# Function to search YouTube by hashtag
 def youtube_search_by_hashtag(hashtag: str, max_results: int = 10) -> list:
     """
     Search YouTube for videos by hashtag and return the latest videos title, description, and URL.
@@ -25,7 +25,7 @@ def youtube_search_by_hashtag(hashtag: str, max_results: int = 10) -> list:
     # Add the hashtag symbol if not already present
     if not hashtag.startswith('#'):
         hashtag = f'#{hashtag}'
-    
+
     # Build the YouTube service using the API key
     youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
 
@@ -49,32 +49,26 @@ def youtube_search_by_hashtag(hashtag: str, max_results: int = 10) -> list:
 
     return videos
 
-def save_to_csv(data: list, filename: str):
-    # Convert the list of dictionaries to a pandas DataFrame
-    df = pd.DataFrame(data)
+# Function to scrape YouTube posts using hashtag
+def scrape_youtube(data):
+    """
+    Scrapes YouTube videos based on hashtag and returns a JSON response.
+    
+    Args:
+        data (dict): Contains the hashtag and the max results.
+    
+    Returns:
+        list: A list of YouTube video information (title, description, and URL).
+    """
+    hashtag = data.get('hashtag')
+    max_results = data.get('max_results', 10)
 
-    # Save the DataFrame to a CSV file
-    df.to_csv(filename, index=False)
-    print(f"Data saved to {filename}")
+    if not hashtag:
+        return {'error': 'Hashtag is required'}, 400
 
-def main():
-    # User inputs
-    hashtag = input("Enter a hashtag to search for: ")
-    max_results = int(input("Enter the maximum number of results to fetch: "))
-
-    # Perform the YouTube search
-    videos = youtube_search_by_hashtag(hashtag, max_results)
-
-    if videos:
-        # Print the results to the console
-        for video in videos:
-            print(f"Title: {video['Title']}\nDescription: {video['Description']}\nURL: {video['URL']}\n")
-
-        # Save the data to a CSV file
-        save_to_csv(videos, "youtube_videos.csv")
-    else:
-        print("No videos found for the given hashtag.")
-
-# Run the main function when the script is executed
-if __name__ == "__main__":
-    main()
+    try:
+        # Search YouTube using the provided hashtag and return the results
+        videos = youtube_search_by_hashtag(hashtag, max_results)
+        return videos
+    except Exception as e:
+        return {'error': str(e)}, 500

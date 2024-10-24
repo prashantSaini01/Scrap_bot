@@ -50,6 +50,7 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install python-dotenv
+RUN playwright install --with-deps
 
 
 # Copy the entire Flask app and .env file into the container
@@ -57,3 +58,25 @@ COPY . .
 
 # Run the Flask app
 CMD ["python", "app.py"]
+
+
+
+# Use Playwright's Python base image
+# FROM mcr.microsoft.com/playwright/python:v1.48.0-focal
+
+# # Set the working directory
+# WORKDIR /app
+
+# # Copy the requirements file
+# COPY requirements.txt .
+
+# # Install Python dependencies
+# RUN pip install --no-cache-dir -r requirements.txt
+# RUN pip install python-dotenv
+
+# # Copy the entire Flask app and .env file into the container
+# COPY . .
+
+# # Run the Flask app
+# CMD ["python", "app.py"]
+

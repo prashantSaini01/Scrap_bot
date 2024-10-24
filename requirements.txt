@@ -14,3 +14,5 @@ werkzeug
 packaging
 flask-restful
 gunicorn
+google-api-python-client
+playwright
